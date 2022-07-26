@@ -7,7 +7,6 @@ import { colorPrimario, colorSecundario } from '../../values/colors';
 export default function SearchCard({ props }) {
 
     return (
-        <View style={styles.viewPrincipal}>
             <View style={styles.card}>
                 <Image
                     style={styles.Background}
@@ -27,24 +26,18 @@ export default function SearchCard({ props }) {
                 <View style={styles.viewInfo}>
                     <Text style={styles.textInfo}>{props.name}</Text>
                 </View>
-                <Text></Text>
             </View>
-
-        </View>
     )
 }
 
 const styles = StyleSheet.create({
-    viewPrincipal: {
-        height: 200,
-        width: '100%',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
     card: {
+        height: 150,
+        margin:20,
+        justifyContent: 'center',
+        alignItems: 'center',
         flex: .8,
         flexDirection:'row',
-        width: '90%',
         borderRadius: 20,
         shadowColor: "#000",
         shadowOffset: {

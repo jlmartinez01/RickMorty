@@ -14,3 +14,17 @@ export const ServiceGetCharactersPerPage = (page) => {
       
     })
 };
+
+export const ServiceGetCharactersPerText = (name) => {
+  const url = RutaPrincipal + 'character/';
+  console.log(url + '?name=' + name)
+  return fetch(url + '?name=' + name,
+    {
+      method: 'GET'
+    })
+    .then((response) => response.json())
+    .catch((error) => {
+      console.warn(error)
+      
+    })
+};

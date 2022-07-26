@@ -1,34 +1,55 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { Component, useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { View, Alert, Dimensions, FlatList, RefreshControl, StyleSheet,TouchableOpacity } from 'react-native';
+import { View, Alert, Dimensions, FlatList, RefreshControl, StyleSheet,TouchableOpacity, Keyboard, Platform } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import { ServiceGetCharactersPerPage } from '../../../services/Services';
+import { ServiceGetCharactersPerPage, ServiceGetCharactersPerText } from '../../../services/Services';
 import SearchCard from '../../../components/Search/SearchCard';
 import { colorPrimario, colorSecundario } from '../../../values/colors';
 import { ActivityIndicator } from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign'
+import SearchBar from '../../../components/Search/SearchBar';
+import { AvoidSoftInput } from 'react-native-avoid-softinput';
+import RNKeyboardManager from 'react-native-keyboard-manager';
 
 export default function Search() {
   const navigation = useNavigation();
   const [isloading, setLoading] = useState(false)
   const [personajes, setPersonajes] = useState([])
+  const [arrayHolder, setArrayHolder] = useState([])
   const [isRefreshing, setIsRefreshing] = useState(true)
   const [hasMoreToLoad, setHasMoreToLoad] = useState(true)
   const [page, setPage] = useState(1)
   const [scrollPositionZero, setScrollPositionZero] = useState(true)
+  const [textSearch, setTextSearch] = useState('')
+  const [search, setSearch] = useState(false)
   const refFlatList = useRef(FlatList);
 
   useEffect(() => {
+    onFocusEffect
     loadPersonajes(true, page)
+  }, []);
+
+  const onFocusEffect = useCallback(() => {
+    if (Platform.OS !== 'ios') {
+      AvoidSoftInput.setAdjustResize();
+    } else {
+      RNKeyboardManager.setEnable(true);
+    }
+
+    return () => {
+      if (Platform.OS !== 'ios') {
+        AvoidSoftInput.setDefaultAppSoftInputMode();
+      } else {
+        RNKeyboardManager.setEnable(false);
+      }
+    };
   }, []);
 
   function loadPersonajes(refreshing, page) {
     if (!refreshing) {
       setLoading(true)
     }
-    
-    console.log(page)
     ServiceGetCharactersPerPage(page)
       .then((res) => {
         if (res.results != undefined) {
@@ -54,20 +75,39 @@ export default function Search() {
     if(refreshing)
     {
       setPersonajes(array_personajes)
+      setArrayHolder(array_personajes)
     }
     else
     {
       setPersonajes([...personajes, ...array_personajes])
+      setArrayHolder([...personajes, ...array_personajes])
     }
     setIsRefreshing(false);
     setLoading(false)
+  }
+
+  function loadSearchPersonajes(text) {
+    setLoading(true)
+    ServiceGetCharactersPerText(text)
+      .then((res) => {
+        if (res.results != undefined) {
+          const personajesCargados = res.results
+          setPersonajes(personajesCargados)
+        }
+        else {
+          setLoading(false)
+        }
+
+      })
+      .catch((error) => {
+        setLoading(false)
+      });
   }
 
   const handleLoadMore = () => {
     if (hasMoreToLoad) {
       if (!isRefreshing) {
         setPage(page + 1)
-        console.log('hola')
         loadPersonajes(false, page + 1);
       }
     }
@@ -76,6 +116,7 @@ export default function Search() {
   const handleLoadRefresh = () => {
     setIsRefreshing(true)
     setPersonajes([])
+    setArrayHolder([])
     setPage(1)
     loadPersonajes(true, 1)
   }
@@ -95,9 +136,31 @@ export default function Search() {
     }
   },[])
 
+  
+  const handleOnChangeText = useCallback((text) => {
+    setTextSearch(text)
+    if(text.length>1)
+    {
+      loadSearchPersonajes(text)
+      setSearch(true)
+    }
+    else
+    {
+      setPersonajes(arrayHolder)
+      setSearch(false)
+    }
+  })
+
   const handlerToUp = () =>{
     refFlatList.current.scrollToOffset({x: 0, y: 0, animated: true});
   }
+
+  const handleClearText = () => {
+    setTextSearch('')
+    setPersonajes(arrayHolder)
+    setSearch(false)
+  }
+
 
   const renderIndicator = useMemo(() => {
     return (
@@ -125,7 +188,17 @@ export default function Search() {
     )
   },[isRefreshing])
 
-  const ButtonToUp = () => {
+  const renderSearchBar  = useMemo(() => {
+    return(
+    <SearchBar
+      onChangeText={handleOnChangeText}
+      value={textSearch}
+      onClearPress={handleClearText}
+    />
+    )
+  },[textSearch])
+
+  const ButtonToUp = useMemo(() => {
     return(
       !scrollPositionZero
       ?
@@ -135,25 +208,34 @@ export default function Search() {
       :
       null
     )
-  }
+  },[scrollPositionZero])
+
+ 
 
 
   return (
     <LinearGradient colors={['#fff',colorPrimario]} style={styles.contain}>
-      <FlatList
-        ref={refFlatList}
-        showsVerticalScrollIndicator={false}
-        refreshControl={RenderRefreshControl}
-        data={personajes}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        onEndReachedThreshold={2}
-        onEndReached={handleLoadMore}
-        maxToRenderPerBatch={7}
-        ListFooterComponent={renderIndicator}
-        onScroll={handlerScroll}
-      />
-      <ButtonToUp/>
+        {
+          renderSearchBar
+        }
+      <View style={styles.viewFlatList}>
+        <FlatList
+          ref={refFlatList}
+          showsVerticalScrollIndicator={false}
+          refreshControl={!search? RenderRefreshControl:null}
+          data={personajes}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          onEndReachedThreshold={2}
+          onEndReached={!search? handleLoadMore:null}
+          maxToRenderPerBatch={7}
+          ListFooterComponent={!search?renderIndicator:null}
+          onScroll={handlerScroll}
+        />
+      </View>
+      {
+        ButtonToUp
+      }
     </LinearGradient>
   );
 }
@@ -183,5 +265,8 @@ const styles = StyleSheet.create({
     elevation: 4,
     justifyContent:'center',
     alignItems:'center'
+  },
+  viewFlatList:{
+    flex:1
   }
 })
