@@ -1,112 +1,116 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
-import React from 'react';
-import type {Node} from 'react';
+import React, { Component } from 'react';
+import { StyleSheet, TouchableOpacity, View, Text, TextInput, Image, StatusBar } from 'react-native';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+  NavigationContainer,
+  DarkTheme,
+} from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import FlashMessage from "react-native-flash-message";
+import SplashScreen from './src/components/splashscreen/SplashScreen';
+import { colorPrimario } from './src/values/colors';
+import Search from './src/screens/Inside/Search/Search';
+import Details from './src/screens/Inside/Search/Details';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+Text.defaultProps = {
+  ...(Text.defaultProps || {}),
+  allowFontScaling: false,
+};
+TextInput.defaultProps = {
+  ...(TextInput.defaultProps || {}),
+  allowFontScaling: false,
 };
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+const StackContainer = createStackNavigator();
+const StackInside = createStackNavigator();
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      splash: true,
+    }
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  }
+
+
+  async componentDidMount() {
+    this.cargaSplash()
+  }
+
+  async cargaSplash(){
+    const data = await this.performTimeConsumingTask();
+    if (data !== null) {
+      this.setState({
+        splash:false
+      })
+    }
+  }
+
+
+  performTimeConsumingTask = async () => {
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        resolve("result");
+      }, 3000)
+    );
   };
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+
+
+
+
+  render() {
+
+
+    const forFade = ({ current, closing }) => ({
+      cardStyle: {
+        opacity: current.progress,
+      },
+    });
+
+
+    const Inside = () => {
+      return (
+        <StackInside.Navigator
+          options={{ cardStyleInterpolator: forFade }}>
+          <StackInside.Screen
+            name='Search'
+            component={Search}
+            options={({ route }) => ({
+              headerShown: false,
+            })} />
+          <StackInside.Screen
+            name='Details'
+            component={Details}
+            options={({ route }) => ({
+              headerShown: false,
+            })} />
+        </StackInside.Navigator>
+      )
+    }
+
+
+
+    return (
+      <NavigationContainer>
+        <View style={{ flex: 1 }}>
+          <StackContainer.Navigator headerShown="none" screenOptions={{ cardStyleInterpolator: forFade }}>
+            {
+              this.state.splash
+                ?
+                <StackContainer.Screen name='Splash' component={SplashScreen} options={{ headerShown: false }} />
+                :
+                <StackContainer.Screen name='Inside' component={Inside} options={{ headerShown: false }} />
+                 
+            }
+          </StackContainer.Navigator>
         </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+        <FlashMessage position="top" duration={2500} />
+      </NavigationContainer>
+    )
+
+  }
+}
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
-export default App;
+});
