@@ -12,7 +12,7 @@ export default function SearchBar({onChangeText,value,onClearPress}) {
         <View style={styles.viewPrincipal}>
                 <View style={styles.inputBarView}>
                     <TextInput
-                        placeholder='Buscar'
+                        placeholder='Search'
                         placeholderTextColor={colorCuarto}
                         style={styles.inputBarComponent}
                         onChangeText={onChangeText}

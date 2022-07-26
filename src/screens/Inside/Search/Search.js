@@ -1,14 +1,14 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { Component, useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { View, Alert, Dimensions, FlatList, RefreshControl, StyleSheet,TouchableOpacity, Keyboard, Platform } from 'react-native';
+import { View, Alert, Dimensions, FlatList, RefreshControl, StyleSheet, TouchableOpacity, Keyboard, Platform } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 import { ServiceGetCharactersPerPage, ServiceGetCharactersPerText } from '../../../services/Services';
-import SearchCard from '../../../components/Search/SearchCard';
+import SearchCard from '../../../components/search/SearchCard';
 import { colorPrimario, colorSecundario } from '../../../values/colors';
 import { ActivityIndicator } from 'react-native-paper';
 import LinearGradient from 'react-native-linear-gradient';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign'
-import SearchBar from '../../../components/Search/SearchBar';
+import SearchBar from '../../../components/search/SearchBar';
 import { AvoidSoftInput } from 'react-native-avoid-softinput';
 import RNKeyboardManager from 'react-native-keyboard-manager';
 
@@ -54,7 +54,7 @@ export default function Search() {
       .then((res) => {
         if (res.results != undefined) {
           const personajesCargados = res.results
-          handlePersonajes(refreshing,personajesCargados)
+          handlePersonajes(refreshing, personajesCargados)
         }
         else {
           setHasMoreToLoad(false)
@@ -71,14 +71,12 @@ export default function Search() {
 
   }
 
-  function handlePersonajes(refreshing,array_personajes) {
-    if(refreshing)
-    {
+  function handlePersonajes(refreshing, array_personajes) {
+    if (refreshing) {
       setPersonajes(array_personajes)
       setArrayHolder(array_personajes)
     }
-    else
-    {
+    else {
       setPersonajes([...personajes, ...array_personajes])
       setArrayHolder([...personajes, ...array_personajes])
     }
@@ -121,38 +119,35 @@ export default function Search() {
     loadPersonajes(true, 1)
   }
 
-  const renderItem = useCallback(({ item }) => <SearchCard props={item} />, [])
+
+  const renderItem = useCallback(({ item }) => <SearchCard props={item} onPress={()=>navigation.navigate('Details',item)} />, [])
 
   const keyExtractor = useCallback((item) => item.id, [])
 
   const handlerScroll = useCallback((e) => {
-    if(setScrollPositionZero && (e.nativeEvent.contentOffset.y)!=0)
-    {
+    if (setScrollPositionZero && (e.nativeEvent.contentOffset.y) != 0) {
       setScrollPositionZero(false)
     }
-    else
-    {
+    else {
       setScrollPositionZero(true)
     }
-  },[])
+  }, [])
 
-  
+
   const handleOnChangeText = useCallback((text) => {
     setTextSearch(text)
-    if(text.length>1)
-    {
+    if (text.length > 1) {
       loadSearchPersonajes(text)
       setSearch(true)
     }
-    else
-    {
+    else {
       setPersonajes(arrayHolder)
       setSearch(false)
     }
   })
 
-  const handlerToUp = () =>{
-    refFlatList.current.scrollToOffset({x: 0, y: 0, animated: true});
+  const handlerToUp = () => {
+    refFlatList.current.scrollToOffset({ x: 0, y: 0, animated: true });
   }
 
   const handleClearText = () => {
@@ -178,58 +173,58 @@ export default function Search() {
     )
   }, [isloading])
 
-  const RenderRefreshControl  = useMemo(() => {
-    return(
-    <RefreshControl
+  const RenderRefreshControl = useMemo(() => {
+    return (
+      <RefreshControl
         tintColor='white'
         refreshing={isRefreshing}
         onRefresh={handleLoadRefresh}
       />
     )
-  },[isRefreshing])
+  }, [isRefreshing])
 
-  const renderSearchBar  = useMemo(() => {
-    return(
-    <SearchBar
-      onChangeText={handleOnChangeText}
-      value={textSearch}
-      onClearPress={handleClearText}
-    />
+  const renderSearchBar = useMemo(() => {
+    return (
+      <SearchBar
+        onChangeText={handleOnChangeText}
+        value={textSearch}
+        onClearPress={handleClearText}
+      />
     )
-  },[textSearch])
+  }, [textSearch])
 
   const ButtonToUp = useMemo(() => {
-    return(
+    return (
       !scrollPositionZero
-      ?
-      <TouchableOpacity onPress={handlerToUp} activeOpacity={.8} style={styles.buttonUpStyle}>
-        <AntDesignIcon size={25} color={colorPrimario} name='caretup'/>
-      </TouchableOpacity>
-      :
-      null
+        ?
+        <TouchableOpacity onPress={handlerToUp} activeOpacity={.8} style={styles.buttonUpStyle}>
+          <AntDesignIcon size={25} color={colorPrimario} name='caretup' />
+        </TouchableOpacity>
+        :
+        null
     )
-  },[scrollPositionZero])
+  }, [scrollPositionZero])
 
- 
+
 
 
   return (
-    <LinearGradient colors={['#fff',colorPrimario]} style={styles.contain}>
-        {
-          renderSearchBar
-        }
+    <LinearGradient colors={[colorSecundario, colorPrimario]} style={styles.contain}>
+      {
+        renderSearchBar
+      }
       <View style={styles.viewFlatList}>
         <FlatList
           ref={refFlatList}
           showsVerticalScrollIndicator={false}
-          refreshControl={!search? RenderRefreshControl:null}
+          refreshControl={!search ? RenderRefreshControl : null}
           data={personajes}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           onEndReachedThreshold={2}
-          onEndReached={!search? handleLoadMore:null}
+          onEndReached={!search ? handleLoadMore : null}
           maxToRenderPerBatch={7}
-          ListFooterComponent={!search?renderIndicator:null}
+          ListFooterComponent={!search ? renderIndicator : null}
           onScroll={handlerScroll}
         />
       </View>
@@ -241,32 +236,32 @@ export default function Search() {
 }
 
 const styles = StyleSheet.create({
-  contain:{
-    flex: 1, 
+  contain: {
+    flex: 1,
   },
-  indicatorView:{
-    padding:5
+  indicatorView: {
+    padding: 5
   },
-  buttonUpStyle:{
-    height:50,
-    width:50,
-    borderRadius:50,
-    backgroundColor:colorSecundario,
-    position:'absolute',
-    bottom:5,
-    right:5,
+  buttonUpStyle: {
+    height: 50,
+    width: 50,
+    borderRadius: 50,
+    backgroundColor: colorSecundario,
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
     shadowColor: "#000",
     shadowOffset: {
-        width: 0,
-        height: 2,
+      width: 0,
+      height: 2,
     },
     shadowOpacity: 0.23,
     shadowRadius: 2.62,
     elevation: 4,
-    justifyContent:'center',
-    alignItems:'center'
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  viewFlatList:{
-    flex:1
+  viewFlatList: {
+    flex: 1
   }
 })

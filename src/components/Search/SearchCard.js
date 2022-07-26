@@ -4,10 +4,14 @@ import { Text, TouchableOpacity, StyleSheet, View, Image } from 'react-native';
 import ProgressiveFastImage from "@freakycoder/react-native-progressive-fast-image";
 import { colorPrimario, colorSecundario } from '../../values/colors';
 
-export default function SearchCard({ props }) {
+export default function SearchCard({ props, onPress }) {
+
+    const handleOnPress = () =>{
+        onPress(props)
+    }
 
     return (
-            <View style={styles.card}>
+            <TouchableOpacity activeOpacity={.9} onPress={handleOnPress} style={styles.card}>
                 <Image
                     style={styles.Background}
                     source={{ uri: props.image }}
@@ -26,7 +30,7 @@ export default function SearchCard({ props }) {
                 <View style={styles.viewInfo}>
                     <Text style={styles.textInfo}>{props.name}</Text>
                 </View>
-            </View>
+            </TouchableOpacity>
     )
 }
 
