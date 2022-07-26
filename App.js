@@ -92,7 +92,7 @@ export default class App extends Component {
 
     return (
       <NavigationContainer>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1,backgroundColor:colorPrimario}}>
           <StackContainer.Navigator headerShown="none" screenOptions={{ cardStyleInterpolator: forFade }}>
             {
               this.state.splash

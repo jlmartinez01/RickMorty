@@ -2,7 +2,7 @@
 import React, { useState,useEffect } from 'react';
 import {Text,TouchableOpacity} from 'react-native';
 import * as Progress from 'react-native-progress';
-import { colorPrimario } from '../../values/colors';
+import { colorPrimario, colorSecundario } from '../../values/colors';
 
 export default function Spinner({isloading}){
 
@@ -14,7 +14,7 @@ export default function Spinner({isloading}){
         thickness={6}
         strokeCap={'round'}
         spinDuration={500}
-        color={colorPrimario}
+        color={colorSecundario}
         style={{
           position: 'absolute', 
           top: 0, 
